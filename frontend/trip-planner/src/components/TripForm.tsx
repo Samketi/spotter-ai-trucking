@@ -113,7 +113,7 @@ export default function TripForm() {
 
    try {
      console.log("Form data", form)
-     const data = await apiService.post<TripResponse>("trip", form);
+     const data = await apiService.post<TripResponse>("trip/", form);
      console.log("Response,",data)
      setTripResponse(data);
    } catch (err) {
