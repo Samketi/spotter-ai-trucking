@@ -113,7 +113,7 @@ export default function TripForm() {
 
    try {
      console.log("Form data", form)
-     const data = await apiService.post<TripResponse>("trip/", form);
+     const data = await apiService.post<TripResponse>("trip", form);
      console.log("Response,",data)
      setTripResponse(data);
    } catch (err) {
@@ -123,36 +123,39 @@ export default function TripForm() {
    }
  };
 
-  const renderAutocompleteInput = (
-    field: "current_location" | "pickup_location" | "dropoff_location",
-    placeholder: string
-  ) => (
-    <div className="relative">
-      <input
-        type="text"
-        placeholder={placeholder}
-        value={form[field]}
-        onChange={(e) => handleInputChange(field, e.target.value)}
-        onFocus={() =>
-          setShowSuggestions((prev) => ({ ...prev, [field]: true }))
-        }
-        className="w-full p-2 border rounded-md"
-      />
-      {showSuggestions[field] && suggestions[field].length > 0 && (
-        <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
-          {suggestions[field].map((result, idx) => (
-            <div
-              key={idx}
-              onClick={() => handleSelectSuggestion(field, result)}
-              className="p-3 hover:bg-blue-50 cursor-pointer border-b last:border-b-0"
-            >
-              <div className="text-sm font-medium">{result.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+const renderAutocompleteInput = (
+  field: "current_location" | "pickup_location" | "dropoff_location",
+  label: string,
+  example: string
+) => (
+  <div className="relative space-y-1">
+    <label htmlFor={field} className="block text-sm font-medium text-gray-700">
+      {label}
+    </label>
+    <input
+      id={field}
+      type="text"
+      placeholder={`e.g. ${example}`}
+      value={form[field]}
+      onChange={(e) => handleInputChange(field, e.target.value)}
+      onFocus={() => setShowSuggestions((prev) => ({ ...prev, [field]: true }))}
+      className="w-full p-2 border rounded-md"
+    />
+    {showSuggestions[field] && suggestions[field].length > 0 && (
+      <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+        {suggestions[field].map((result, idx) => (
+          <div
+            key={idx}
+            onClick={() => handleSelectSuggestion(field, result)}
+            className="p-3 hover:bg-blue-50 cursor-pointer border-b last:border-b-0"
+          >
+            <div className="text-sm font-medium">{result.label}</div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
 
   const routePositions = markers
     .sort((a, b) => {
@@ -170,23 +173,45 @@ export default function TripForm() {
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-4">
-      <h2 className="text-2xl font-bold text-center">Trip Planner</h2>
-
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-4">
-          {renderAutocompleteInput("current_location", "Current Location")}
-          {renderAutocompleteInput("pickup_location", "Pickup Location")}
-          {renderAutocompleteInput("dropoff_location", "Dropoff Location")}
+          {renderAutocompleteInput(
+            "current_location",
+            "Current Location (Start)",
+            "1600 Amphitheatre Pkwy, Mountain View, CA"
+          )}
+          {renderAutocompleteInput(
+            "pickup_location",
+            "Pickup Location",
+            "20 W 34th St, New York, NY"
+          )}
+          {renderAutocompleteInput(
+            "dropoff_location",
+            "Dropoff Location (End)",
+            "2120 Speedway, Austin, TX"
+          )}
 
-          <input
-            type="number"
-            placeholder="Current cycle hours"
-            value={form.current_cycle_hours}
-            onChange={(e) =>
-              setForm({ ...form, current_cycle_hours: Number(e.target.value) })
-            }
-            className="w-full p-2 border rounded-md"
-          />
+          <div className="space-y-1">
+            <label
+              htmlFor="cycle_hours"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Current Cycle Hours
+            </label>
+            <input
+              id="cycle_hours"
+              type="number"
+              placeholder="e.g. 5.5"
+              value={form.current_cycle_hours}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  current_cycle_hours: Number(e.target.value),
+                })
+              }
+              className="w-full p-2 border rounded-md"
+            />
+          </div>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-md">
@@ -225,9 +250,9 @@ export default function TripForm() {
 
         <div>
           <MapContainer
-            center={markers[0]?.pos || [37.7749, -122.4194]}
+            center={markers[0]?.pos || [-26.2041, 28.0473]}
             zoom={5}
-            className="h-96 w-full rounded-md"
+            className="h-96 w-[700px] rounded-md"
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
